@@ -5,15 +5,14 @@
     "version": "1.0.0",
     "description": "API pédagogique pour gérer étudiants et cours (no DB)"
   },
-  "tags": [
-    { "name": "Courses", "description": "Gestion des cours" }
-  ],
+  "tags": [{ "name": "Courses", "description": "Gestion des cours" }],
   "paths": {
     "/courses": {
-      "get": { 
-        "tags": ["Courses"], 
-        "summary": "Liste des cours", 
-        "responses": { "200": { "description": "OK" } } },
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Liste des cours",
+        "responses": { "200": { "description": "OK" } }
+      },
       "post": {
         "summary": "Créer un cours",
         "requestBody": {
@@ -22,7 +21,10 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": { "title": { "type": "string" }, "teacher": { "type": "string" } },
+                "properties": {
+                  "title": { "type": "string" },
+                  "teacher": { "type": "string" }
+                },
                 "required": ["title", "teacher"]
               }
             }
@@ -38,14 +40,27 @@
       "get": {
         "summary": "Récupérer un cours",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
         ],
-        "responses": { "200": { "description": "OK" }, "404": { "description": "Non trouvé" } }
+        "responses": {
+          "200": { "description": "OK" },
+          "404": { "description": "Non trouvé" }
+        }
       },
       "delete": {
         "summary": "Supprimer un cours",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
         ],
         "responses": {
           "204": { "description": "Supprimé" },

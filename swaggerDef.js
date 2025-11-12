@@ -3,6 +3,6 @@ module.exports = {
   info: {
     title: 'StudentCourseAPI',
     version: '1.0.0',
-    description: 'API pédagogique pour gérer étudiants et cours (no DB)'
-  }
-}
+    description: 'API pédagogique pour gérer étudiants et cours (no DB)',
+  },
+};
