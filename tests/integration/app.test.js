@@ -3,12 +3,13 @@ const app = require('../../src/app');
 const storage = require('../../src/services/storage');
 
 describe('Student-Course API integration', () => {
+  // Avant chaque test : réinitialiser et recharger les données de test
   beforeEach(() => {
     storage.reset();
     storage.seed();
   });
 
-  // --- Vérifie que le seed fonctionne ---
+  // Vérifie que la route GET /students renvoie bien les étudiants du jeu de données initial
   test('GET /students should return seeded students', async () => {
     const res = await request(app).get('/students');
     expect(res.statusCode).toBe(200);
@@ -19,7 +20,7 @@ describe('Student-Course API integration', () => {
     expect(students[0]).toHaveProperty('name');
   });
 
-  // --- Création d’un nouvel étudiant ---
+  // Vérifie que la route POST /students crée un nouvel étudiant
   test('POST /students should create a new student', async () => {
     const res = await request(app)
       .post('/students')
@@ -30,7 +31,7 @@ describe('Student-Course API integration', () => {
     expect(res.body).toHaveProperty('email', 'david@example.com');
   });
 
-  // --- Empêcher la duplication d’email ---
+  // Vérifie qu'on ne peut pas créer un étudiant avec un email déjà existant
   test('POST /students should not allow duplicate email', async () => {
     const res = await request(app)
       .post('/students')
@@ -38,7 +39,7 @@ describe('Student-Course API integration', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  // --- Ne pas supprimer un cours si des étudiants sont inscrits ---
+  // Vérifie qu'un cours ne peut pas être supprimé s'il a des étudiants inscrits
   test('DELETE /courses/:id should NOT delete a course if students are enrolled', async () => {
     const coursesRes = await request(app).get('/courses');
     expect(coursesRes.statusCode).toBe(200);
@@ -46,13 +47,14 @@ describe('Student-Course API integration', () => {
     const courses = coursesRes.body.courses || coursesRes.body;
     const courseId = courses[0].id;
 
+    // Inscription d’un étudiant avant la tentative de suppression
     await request(app).post(`/courses/${courseId}/students/1`);
 
     const res = await request(app).delete(`/courses/${courseId}`);
     expect(res.statusCode).toBe(400);
   });
 
-  // --- Supprimer un cours sans étudiants ---
+  // Vérifie qu'un cours sans étudiants inscrits peut être supprimé
   test('DELETE /courses/:id should delete a course with no students enrolled', async () => {
     const courseRes = await request(app)
       .post('/courses')
@@ -65,21 +67,17 @@ describe('Student-Course API integration', () => {
     expect([204, 200]).toContain(del.statusCode);
   });
 
-  // --- GET inconnu ---
+  // Vérifie que les routes inconnues renvoient une erreur 404
   test('GET /unknown should return 404 with JSON', async () => {
     const res = await request(app).get('/somethingthatdoesnotexist');
     expect(res.statusCode).toBe(404);
     expect(res.body).toHaveProperty('error', 'Not Found');
   });
 
-  // ------------------------------------------------------------------
-  // 🚀 Tests pour routes /courses/:courseId/students/:studentId
-  // ------------------------------------------------------------------
-
+  // Vérifie qu'un étudiant peut s'inscrire à un cours existant
   test('POST /courses/:courseId/students/:studentId should enroll a student successfully (201)', async () => {
     const res = await request(app).post('/courses/1/students/1');
 
-    // Si l’inscription échoue (400), on vérifie simplement qu’une erreur est renvoyée
     if (res.statusCode === 400) {
       expect(res.body).toHaveProperty('error');
     } else {
@@ -88,20 +86,21 @@ describe('Student-Course API integration', () => {
     }
   });
 
+  // Vérifie qu'une inscription échoue si le cours ou l'étudiant n'existe pas
   test('POST /courses/:courseId/students/:studentId should return 400 if enrollment fails', async () => {
-    // on force un cas d’erreur : étudiant ou cours invalide
     const res = await request(app).post('/courses/999/students/999');
     expect(res.statusCode).toBe(400);
     expect(res.body).toHaveProperty('error');
   });
 
+  // Vérifie qu'un étudiant peut être désinscrit d'un cours existant
   test('DELETE /courses/:courseId/students/:studentId should unenroll successfully (204)', async () => {
-    // s’assure que l’étudiant est inscrit avant de le désinscrire
     await request(app).post('/courses/1/students/1');
     const res = await request(app).delete('/courses/1/students/1');
     expect([200, 204]).toContain(res.statusCode);
   });
 
+  // Vérifie qu'une désinscription échoue si le cours ou l'étudiant n'existe pas
   test('DELETE /courses/:courseId/students/:studentId should return 404 if unenroll fails', async () => {
     const res = await request(app).delete('/courses/999/students/999');
     expect(res.statusCode).toBe(404);

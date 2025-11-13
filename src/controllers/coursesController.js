@@ -70,8 +70,7 @@ exports.getCourse = (req, res) => {
  */
 exports.createCourse = (req, res) => {
   const { title, teacher } = req.body;
-  if (!title || !teacher)
-    return res.status(400).json({ error: 'title and teacher required' });
+  if (!title || !teacher) return res.status(400).json({ error: 'title and teacher required' });
   const created = storage.create('courses', { title, teacher });
   return res.status(201).json(created);
 };
@@ -95,8 +94,7 @@ exports.createCourse = (req, res) => {
  */
 exports.deleteCourse = (req, res) => {
   const result = storage.remove('courses', req.params.id);
-  if (result === false)
-    return res.status(404).json({ error: 'Course not found' });
+  if (result === false) return res.status(404).json({ error: 'Course not found' });
   if (result.error) return res.status(400).json({ error: result.error });
   return res.status(204).send();
 };
@@ -105,10 +103,7 @@ exports.updateCourse = (req, res) => {
   const course = storage.get('courses', req.params.id);
   if (!course) return res.status(404).json({ error: 'Course not found' });
   const { title, teacher } = req.body;
-  if (
-    title &&
-    storage.list('courses').find((c) => c.title === title && c.id !== course.id)
-  ) {
+  if (title && storage.list('courses').find((c) => c.title === title && c.id !== course.id)) {
     return res.status(400).json({ error: 'Course title must be unique' });
   }
   if (title) course.title = title;

@@ -1,11 +1,13 @@
 const coursesController = require('../../src/controllers/coursesController');
 const storage = require('../../src/services/storage');
 
+// On simule le module storage pour isoler le contrôleur pendant les tests unitaires
 jest.mock('../../src/services/storage');
 
 describe('coursesController', () => {
   let req, res;
 
+  // Avant chaque test : recrée les objets req/res et réinitialise les mocks
   beforeEach(() => {
     req = { params: {}, body: {}, query: {} };
     res = {
@@ -16,6 +18,7 @@ describe('coursesController', () => {
     jest.clearAllMocks();
   });
 
+  // Vérifie que getCourse renvoie bien le cours et les étudiants inscrits
   test('getCourse should return course and students when found', () => {
     const fakeCourse = { id: 1, title: 'Math' };
     const fakeStudents = [{ id: 10, name: 'Alice' }];
@@ -33,6 +36,7 @@ describe('coursesController', () => {
     });
   });
 
+  // Vérifie que updateCourse renvoie une erreur 400 si le titre existe déjà
   test('updateCourse should return 400 if title is not unique', () => {
     const existingCourse = { id: 1, title: 'Math' };
     storage.get.mockReturnValue(existingCourse);
@@ -52,6 +56,7 @@ describe('coursesController', () => {
     });
   });
 
+  // Vérifie que updateCourse met correctement à jour les champs d’un cours
   test('updateCourse should update course fields successfully', () => {
     const course = { id: 1, title: 'Old', teacher: 'John' };
     storage.get.mockReturnValue(course);

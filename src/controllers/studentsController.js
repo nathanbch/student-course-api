@@ -16,16 +16,14 @@ exports.getStudent = (a, b) => {
 };
 exports.createStudent = (req, res) => {
   const { name, email } = req.body;
-  if (!name || !email)
-    return res.status(400).json({ error: 'name and email required' });
+  if (!name || !email) return res.status(400).json({ error: 'name and email required' });
   const result = s.create('students', { name, email });
   if (result.error) return res.status(400).json({ error: result.error });
   return res.status(201).json(result);
 };
 exports.deleteStudent = (req, res) => {
   const result = s.remove('students', req.params.id);
-  if (result === false)
-    return res.status(404).json({ error: 'Student not found' });
+  if (result === false) return res.status(404).json({ error: 'Student not found' });
   if (result.error) return res.status(400).json({ error: result.error });
   return res.status(204).send();
 };
@@ -33,10 +31,7 @@ exports.updateStudent = (req, res) => {
   const student = s.get('students', req.params.id);
   if (!student) return res.status(404).json({ error: 'Student not found' });
   const { name, email } = req.body;
-  if (
-    email &&
-    s.list('students').find((st) => st.email === email && st.id !== student.id)
-  ) {
+  if (email && s.list('students').find((st) => st.email === email && st.id !== student.id)) {
     return res.status(400).json({ error: 'Email must be unique' });
   }
   if (name) student.name = name;
