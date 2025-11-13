@@ -1,56 +1,288 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "StudentCourseAPI",
+    "title": "Student Course API",
     "version": "1.0.0",
-    "description": "API pédagogique pour gérer étudiants et cours (no DB)"
+    "description": "API REST pour gérer les étudiants, les cours et les inscriptions."
   },
-  "tags": [
-    { "name": "Courses", "description": "Gestion des cours" }
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
   ],
   "paths": {
-    "/courses": {
-      "get": { 
-        "tags": ["Courses"], 
-        "summary": "Liste des cours", 
-        "responses": { "200": { "description": "OK" } } },
+    "/students": {
+      "get": {
+        "summary": "Liste les étudiants",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filtre par nom"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filtre par email"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des étudiants",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "students": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Student" }
+                    },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
-        "summary": "Créer un cours",
+        "summary": "Crée un nouvel étudiant",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": { "title": { "type": "string" }, "teacher": { "type": "string" } },
-                "required": ["title", "teacher"]
-              }
+              "schema": { "$ref": "#/components/schemas/StudentInput" }
             }
           }
         },
         "responses": {
-          "201": { "description": "Créé" },
-          "400": { "description": "Paramètres invalides" }
+          "201": {
+            "description": "Étudiant créé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Student" }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur : email déjà utilisé ou champs manquants"
+          }
         }
       }
     },
-    "/courses/{id}": {
+
+    "/students/{id}": {
       "get": {
-        "summary": "Récupérer un cours",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-        ],
-        "responses": { "200": { "description": "OK" }, "404": { "description": "Non trouvé" } }
-      },
-      "delete": {
-        "summary": "Supprimer un cours",
+        "summary": "Récupère un étudiant par ID",
         "parameters": [
           { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
         ],
         "responses": {
-          "204": { "description": "Supprimé" },
-          "404": { "description": "Non trouvé" }
+          "200": {
+            "description": "Étudiant trouvé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "student": { "$ref": "#/components/schemas/Student" },
+                    "courses": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Course" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Étudiant introuvable" }
         }
+      },
+
+      "put": {
+        "summary": "Met à jour un étudiant",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/StudentInput" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Mise à jour réussie" },
+          "400": { "description": "Email déjà utilisé" },
+          "404": { "description": "Étudiant introuvable" }
+        }
+      },
+
+      "delete": {
+        "summary": "Supprime un étudiant",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "204": { "description": "Étudiant supprimé" },
+          "404": { "description": "Étudiant introuvable" }
+        }
+      }
+    },
+
+    "/courses": {
+      "get": {
+        "summary": "Liste les cours",
+        "responses": {
+          "200": {
+            "description": "Liste des cours",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Course" }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "post": {
+        "summary": "Crée un cours",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CourseInput" } }
+          }
+        },
+        "responses": {
+          "201": { "description": "Cours créé" },
+          "400": { "description": "Titre déjà utilisé" }
+        }
+      }
+    },
+
+    "/courses/{id}": {
+      "get": {
+        "summary": "Récupère un cours et ses étudiants inscrits",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cours trouvé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "course": { "$ref": "#/components/schemas/Course" },
+                    "students": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Student" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Cours introuvable" }
+        }
+      },
+
+      "put": {
+        "summary": "Met à jour un cours",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CourseInput" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Cours mis à jour" },
+          "400": { "description": "Titre déjà utilisé" },
+          "404": { "description": "Cours introuvable" }
+        }
+      },
+
+      "delete": {
+        "summary": "Supprime un cours",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "204": { "description": "Cours supprimé" },
+          "400": { "description": "Impossible (étudiants inscrits)" },
+          "404": { "description": "Cours introuvable" }
+        }
+      }
+    },
+
+    "/courses/{courseId}/students/{studentId}": {
+      "post": {
+        "summary": "Inscrit un étudiant à un cours",
+        "parameters": [
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "studentId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Inscription réussie" },
+          "400": { "description": "Erreur : cours plein ou ID invalide" }
+        }
+      },
+
+      "delete": {
+        "summary": "Désinscrit un étudiant d’un cours",
+        "parameters": [
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "studentId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "204": { "description": "Désinscription réussie" },
+          "404": { "description": "Désinscription impossible" }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "schemas": {
+      "Student": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "email": { "type": "string" }
+        }
+      },
+      "StudentInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string" }
+        },
+        "required": ["name", "email"]
+      },
+      "Course": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "teacher": { "type": "string" }
+        }
+      },
+      "CourseInput": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "teacher": { "type": "string" }
+        },
+        "required": ["title", "teacher"]
       }
     }
   }
